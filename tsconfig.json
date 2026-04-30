@@ -1,6 +1,21 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@ui-kit": ["./src/ui-kit"],
+      "@ui-kit/*": ["./src/ui-kit/*"],
+      "@navigation/*": ["./src/navigation/*"],
+      "@services/*": ["./src/services/*"],
+      "@models/*": ["./src/models/*"],
+      "@viewmodels/*": ["./src/viewmodels/*"],
+      "@views/*": ["./src/views/*"],
+      "@common/*": ["./src/common/*"],
+      "@config/*": ["./src/config/*"],
+      "@assets/*": ["./src/assets/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }

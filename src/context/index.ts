@@ -1,10 +1,7 @@
 /**
  * =============================================================================
- * MODELS INDEX - Export all models
+ * CONTEXT INDEX
  * =============================================================================
- *
- * Barrel export cho tất cả models.
  */
 
-export * from './Auth';
-export * from './Stock';
+export * from './AuthContext';

@@ -21,9 +21,10 @@
  */
 
 import React, { useCallback } from 'react';
-import { View, FlatList, StyleSheet, Text } from 'react-native';
+import { View, FlatList, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWatchlistViewModel } from '../../viewmodels';
+import { useAuth } from '../../context/AuthContext';
 import { StockItemView } from '../components/StockItemView';
 import { SearchBarView } from '../components/SearchBarView';
 import { FilterBarView } from '../components/FilterBarView';
@@ -54,6 +55,9 @@ export const WatchlistScreen: React.FC = () => {
     isFiltered,
   } = useWatchlistViewModel();
 
+  // ---------- AUTH ----------
+  const { user, logout } = useAuth();
+
   // ---------- HANDLERS ----------
   const handleStockPress = useCallback((stock: Stock) => {
     console.log('Stock pressed:', stock.symbol);
@@ -69,6 +73,11 @@ export const WatchlistScreen: React.FC = () => {
       showFavoritesOnly: false,
     });
   }, [updateFilters]);
+
+  const handleLogout = useCallback(async () => {
+    await logout();
+    // Navigation sẽ tự động về Login nhờ RootNavigator
+  }, [logout]);
 
   // ---------- RENDER HELPERS ----------
   const renderItem = useCallback(
@@ -129,9 +138,23 @@ export const WatchlistScreen: React.FC = () => {
     );
   };
 
+  // ---------- RENDER USER INFO & LOGOUT ----------
+  const renderUserSection = () => (
+    <View style={styles.userSection}>
+      <View style={styles.userInfo}>
+        <Text style={styles.welcomeText}>Welcome,</Text>
+        <Text style={styles.userName}>{user?.name || user?.email || 'User'}</Text>
+      </View>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   // ---------- MAIN RENDER ----------
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {renderUserSection()}
       <FlatList
         data={filteredStocks}
         keyExtractor={(item) => item.id}
@@ -156,6 +179,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+  },
+  userSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  userInfo: {
+    flex: 1,
+  },
+  welcomeText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  logoutButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#FF3B30',
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   header: {
     marginBottom: 16,

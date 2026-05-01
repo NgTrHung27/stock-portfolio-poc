@@ -84,13 +84,18 @@ class StockServiceImpl implements IStockService {
    * Mô phỏng API call với delay 500ms
    */
   async getStocks(): Promise<Stock[]> {
+    console.log('[StockService] getStocks called');
+    
     // Simulate network delay
     await this.delay(500);
 
     // Trong thực tế, đây sẽ là:
     // const response = await fetch('https://api.example.com/stocks');
-    // return response.json();
+    // const data = await response.json();
+    // console.log('[StockService] API Response:', data);
+    // return data.stocks;
 
+    console.log('[StockService] Returning mock data:', this.mockStocks.length, 'stocks');
     return [...this.mockStocks];
   }
 

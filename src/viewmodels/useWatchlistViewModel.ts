@@ -22,15 +22,13 @@
  * Ví dụ trong Flutter: lib/features/xxx/presentation/bloc/
  */
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   Stock,
   FilterOptions,
-  SortOption,
-  SortDirection,
   DEFAULT_FILTER_OPTIONS,
 } from '../models';
-import { stockService, IStockService } from '../services';
+import { useWatchlistStore } from '../store/useWatchlistStore';
 
 // ============================================================================
 // VIEWMODEL STATE - State mà ViewModel quản lý
@@ -40,15 +38,6 @@ import { stockService, IStockService } from '../services';
  * State của WatchlistScreen
  */
 interface WatchlistState {
-  /** Danh sách stocks gốc từ API */
-  stocks: Stock[];
-
-  /** Loading state */
-  isLoading: boolean;
-
-  /** Error message nếu có lỗi */
-  error: string | null;
-
   /** Filter options hiện tại */
   filters: FilterOptions;
 }
@@ -83,16 +72,13 @@ export interface UseWatchlistViewModelReturn {
 
   // ---------- ACTIONS (Methods cho View gọi) ----------
   /** Toggle favorite của 1 stock */
-  toggleFavorite: (id: string) => Promise<void>;
+  toggleFavorite: (id: string) => void;
 
   /** Cập nhật filter */
   updateFilters: (newFilters: Partial<FilterOptions>) => void;
 
   /** Reset filters về default */
   resetFilters: () => void;
-
-  /** Refresh data từ API */
-  refresh: () => Promise<void>;
 
   // ---------- COMPUTED VALUES ----------
   /** Có stock nào không */
@@ -109,85 +95,25 @@ export interface UseWatchlistViewModelReturn {
 /**
  * useWatchlistViewModel - ViewModel cho Watchlist feature
  *
- * @param service - StockService instance (inject để test được)
- *
- * Cách dùng trong View:
- * ```tsx
- * const viewModel = useWatchlistViewModel();
- * const { filteredStocks, toggleFavorite } = viewModel;
- * ```
+ * Kết nối với Zustand Store để quản lý state toàn cục
  */
-export const useWatchlistViewModel = (
-  service: IStockService = stockService
-): UseWatchlistViewModelReturn => {
-  // ---------- STATE ----------
-  const [stocks, setStocks] = useState<Stock[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const useWatchlistViewModel = (): UseWatchlistViewModelReturn => {
+  // ---------- STATE FROM ZUSTAND STORE ----------
+  // Lấy stocks và action từ Global Store
+  const stocks = useWatchlistStore(state => state.stocks);
+  const toggleFavAction = useWatchlistStore(state => state.toggleFavorite);
+
+  // ---------- LOCAL STATE (Chỉ dùng cho UI của màn hình này) ----------
   const [filters, setFilters] = useState<FilterOptions>(DEFAULT_FILTER_OPTIONS);
-
-  // ---------- SIDE EFFECTS ----------
-  /**
-   * Load stocks khi mount
-   * (tương tự useEffect(() => {...}, []))
-   */
-  useEffect(() => {
-    loadStocks();
-  }, []);
-
-  /**
-   * Load stocks từ service
-   */
-  const loadStocks = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await service.getStocks();
-      setStocks(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load stocks');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // ---------- ACTIONS (Business Logic) ----------
 
   /**
-   * Toggle favorite - Xử lý logic toggle favorite
-   *
-   * FLOW:
-   * 1. Optimistic update - Cập nhật UI ngay (UX tốt hơn)
-   * 2. Gọi API
-   * 3. Nếu fail → revert lại state cũ
+   * Toggle favorite - Gọi action từ Zustand Store
    */
-  const toggleFavorite = useCallback(async (id: string) => {
-    // 1. Optimistic update - Cập nhật UI ngay lập tức
-    const previousStocks = [...stocks];
-    setStocks(prev =>
-      prev.map(stock =>
-        stock.id === id ? { ...stock, isFav: !stock.isFav } : stock
-      )
-    );
-
-    // 2. Gọi API
-    try {
-      const updatedStock = await service.toggleFavorite(id);
-
-      // 3. Cập nhật với data từ API (để đảm bảo sync)
-      setStocks(prev =>
-        prev.map(stock =>
-          stock.id === id ? updatedStock : stock
-        )
-      );
-    } catch (err) {
-      // 4. Nếu fail → Revert lại state cũ
-      console.error('Failed to toggle favorite:', err);
-      setStocks(previousStocks);
-      setError('Failed to update favorite');
-    }
-  }, [stocks, service]);
+  const toggleFavorite = useCallback((id: string) => {
+    toggleFavAction(id);
+  }, [toggleFavAction]);
 
   /**
    * Update filters - Cập nhật filter options
@@ -201,13 +127,6 @@ export const useWatchlistViewModel = (
    */
   const resetFilters = useCallback(() => {
     setFilters(DEFAULT_FILTER_OPTIONS);
-  }, []);
-
-  /**
-   * Refresh - Load lại data từ API
-   */
-  const refresh = useCallback(async () => {
-    await loadStocks();
   }, []);
 
   // ---------- COMPUTED VALUES (useMemo) ----------
@@ -280,8 +199,8 @@ export const useWatchlistViewModel = (
   return {
     // State
     filteredStocks,
-    isLoading,
-    error,
+    isLoading: false,
+    error: null,
     filters,
     totalCount: stocks.length,
     filteredCount: filteredStocks.length,
@@ -290,7 +209,6 @@ export const useWatchlistViewModel = (
     toggleFavorite,
     updateFilters,
     resetFilters,
-    refresh,
 
     // Computed
     isEmpty,

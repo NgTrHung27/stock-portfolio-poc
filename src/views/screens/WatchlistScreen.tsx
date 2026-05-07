@@ -21,7 +21,8 @@
  */
 
 import React, { useCallback } from 'react';
-import { View, FlatList, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWatchlistViewModel } from '../../viewmodels';
 import { useAuth } from '../../context/AuthContext';
@@ -155,18 +156,17 @@ export const WatchlistScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {renderUserSection()}
-      <FlatList
-        data={filteredStocks}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        ListHeaderComponent={!isEmpty ? renderHeader : null}
-        ListEmptyComponent={renderEmpty}
-        contentContainerStyle={[
-          styles.listContent,
-          filteredStocks.length === 0 && styles.emptyListContent,
-        ]}
-        showsVerticalScrollIndicator={false}
-      />
+      <View style={styles.listContainer}>
+        <FlashList
+          data={filteredStocks}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          ListHeaderComponent={!isEmpty ? renderHeader : null}
+          ListEmptyComponent={renderEmpty}
+          estimatedItemSize={80}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
     </SafeAreaView>
   );
 };
@@ -220,6 +220,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 8,
+  },
+  listContainer: {
+    flex: 1,
   },
   listContent: {
     paddingHorizontal: 16,

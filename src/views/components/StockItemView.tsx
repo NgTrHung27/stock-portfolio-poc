@@ -16,6 +16,12 @@
 
 import React, { memo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withSpring,
+} from 'react-native-reanimated';
 import { Card } from '../../ui-kit';
 import { Stock } from '../../models';
 
@@ -51,11 +57,28 @@ export const StockItemView: React.FC<StockItemViewProps> = memo(({
   onToggleFavorite,
   onPress,
 }) => {
+  // ---------- REANIMATED ANIMATION ----------
+  // useSharedValue: Tạo biến lưu trên UI Thread
+  const iconScale = useSharedValue(1);
+
+  // useAnimatedStyle: Liên kết SharedValue với Style
+  const animatedIconStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: iconScale.value }],
+    };
+  });
+
   // ---------- COMPUTED VALUES ----------
   const isPositiveChange = stock.change >= 0;
 
   // ---------- HANDLERS ----------
   const handleToggleFavorite = () => {
+    // Kích hoạt animation: phóng to rồi thu nhỏ với hiệu ứng Spring
+    iconScale.value = withSequence(
+      withSpring(1.5, { damping: 2, stiffness: 80 }),
+      withSpring(1)
+    );
+
     onToggleFavorite(stock.id);
   };
 
@@ -99,9 +122,9 @@ export const StockItemView: React.FC<StockItemViewProps> = memo(({
             onPress={handleToggleFavorite}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.favoriteIcon}>
+            <Animated.Text style={[styles.favoriteIcon, animatedIconStyle]}>
               {stock.isFav ? '❤️' : '🤍'}
-            </Text>
+            </Animated.Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>

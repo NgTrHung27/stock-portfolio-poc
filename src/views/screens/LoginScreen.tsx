@@ -7,7 +7,7 @@
  * Kết nối với useAuthViewModel (từ AuthContext).
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
@@ -37,8 +38,12 @@ export const LoginScreen: React.FC = () => {
     clearError,
   } = useAuth();
 
-  // ---------- LOCAL STATE ----------
+  // ---------- LOCAL STATE & REFS ----------
   const [showPassword, setShowPassword] = useState(false);
+  
+  // [GHI CHÚ] useRef: Dùng để tham chiếu đến 1 element thực tế trên UI mà không gây render lại.
+  // Ở đây chúng ta tham chiếu đến Password Input để tự động focus vào nó khi user nhập xong email.
+  const passwordInputRef = useRef<TextInput>(null);
 
   // ---------- HANDLERS ----------
   const handleLogin = useCallback(async () => {
@@ -83,9 +88,13 @@ export const LoginScreen: React.FC = () => {
               autoCapitalize="none"
               autoCorrect={false}
               error={validationErrors.email}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordInputRef.current?.focus()}
+              blurOnSubmit={false}
             />
 
             <AuthTextInput
+              ref={passwordInputRef}
               label="Password"
               value={password}
               onChangeText={setPassword}

@@ -110,6 +110,9 @@ export const useWatchlistViewModel = (): UseWatchlistViewModelReturn => {
 
   /**
    * Toggle favorite - Gọi action từ Zustand Store
+   * [GHI CHÚ] useCallback: Giúp GHI NHỚ function này qua các lần render, tránh tạo lại function mới mỗi lần render.
+   * Điều này đặc biệt hữu ích khi truyền function xuống các component con để tránh làm chúng re-render vô ích.
+   * Cú pháp: useCallback(function_của_bạn, [dependency_array])
    */
   const toggleFavorite = useCallback((id: string) => {
     toggleFavAction(id);
@@ -133,6 +136,10 @@ export const useWatchlistViewModel = (): UseWatchlistViewModelReturn => {
   /**
    * Filtered & Sorted stocks
    * Logic filter/sort nằm ở đây - đây là BUSINESS LOGIC
+   * 
+   * [GHI CHÚ] useMemo: Dùng để GHI NHỚ một kết quả tính toán phức tạp (như filter, sort một mảng dài).
+   * Nó chỉ chạy lại logic tính toán này KHI VÀ CHỈ KHI các biến trong mảng dependency `[stocks, filters]` bị thay đổi.
+   * Nếu component re-render vì một state khác (ví dụ: đổi theme), useMemo sẽ trả về kết quả cũ đã cache, giúp tối ưu hiệu năng.
    */
   const filteredStocks = useMemo(() => {
     let result = [...stocks];

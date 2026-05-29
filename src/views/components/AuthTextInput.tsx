@@ -22,14 +22,14 @@ export interface AuthTextInputProps extends RNTextInputProps {
   rightIcon?: React.ReactNode;
 }
 
-export const AuthTextInput: React.FC<AuthTextInputProps> = memo(({
+export const AuthTextInput = React.forwardRef<RNTextInput, AuthTextInputProps>(({
   label,
   error,
   isPassword,
   rightIcon,
   style,
   ...props
-}) => {
+}, ref) => {
   const hasError = !!error;
 
   return (
@@ -37,6 +37,7 @@ export const AuthTextInput: React.FC<AuthTextInputProps> = memo(({
       <Text style={styles.label}>{label}</Text>
       <View style={[styles.inputContainer, hasError && styles.inputError]}>
         <RNTextInput
+          ref={ref}
           style={[styles.input, style]}
           placeholderTextColor="#999"
           secureTextEntry={isPassword}
@@ -54,6 +55,9 @@ export const AuthTextInput: React.FC<AuthTextInputProps> = memo(({
     </View>
   );
 });
+
+// Adding memo as it was there previously
+export const MemoizedAuthTextInput = memo(AuthTextInput);
 
 const styles = StyleSheet.create({
   container: {

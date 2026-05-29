@@ -17,6 +17,10 @@ interface WatchlistStore {
 }
 
 // Khởi tạo Zustand Store
+// [GHI CHÚ] Zustand: Là một thư viện quản lý State siêu nhẹ, dễ dùng hơn Redux rất nhiều.
+// Nó tạo ra một "Global State" có thể được truy cập và cập nhật từ bất kỳ component nào 
+// mà không cần phải bọc App bằng <Provider> như Context API hay Redux.
+// Cách dùng: Chỉ cần import useWatchlistStore và gọi nó như một hook (VD: const stocks = useWatchlistStore(state => state.stocks))
 export const useWatchlistStore = create<WatchlistStore>((set) => ({
   stocks: DUMMY_STOCKS, // Dữ liệu ban đầu
 

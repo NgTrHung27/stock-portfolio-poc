@@ -159,11 +159,10 @@ export const WatchlistScreen: React.FC = () => {
       <View style={styles.listContainer}>
         <FlashList
           data={filteredStocks}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item: Stock) => item.id}
           renderItem={renderItem}
           ListHeaderComponent={!isEmpty ? renderHeader : null}
           ListEmptyComponent={renderEmpty}
-          estimatedItemSize={80}
           showsVerticalScrollIndicator={false}
         />
       </View>
